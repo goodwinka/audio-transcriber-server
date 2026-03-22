@@ -94,27 +94,39 @@ VOSK_MODELS = [
     },
 ]
 
+def _is_valid_vosk_dir(path: Path) -> bool:
+    """Проверяет наличие файлов модели Vosk в директории."""
+    return path.is_dir() and (path / "am").is_dir()
+
 def download_vosk_models():
     print("\n━━━ Vosk модели ━━━")
     for m in VOSK_MODELS:
         dest = VOSK_DIR / m["dir"]
-        if dest.exists():
+        if _is_valid_vosk_dir(dest):
             print(f"  ✓ {m['name']} — уже есть")
             continue
         print(f"\n► {m['name']}")
         if "hf" in m:
             ok = try_hf_download(m["hf"], dest)
+            # HF download may succeed but produce invalid/incomplete model files
+            if ok and not _is_valid_vosk_dir(dest):
+                print(f"  HF: файлы модели не обнаружены, удаляем и пробуем резервный URL...")
+                import shutil
+                if dest.exists():
+                    shutil.rmtree(dest, ignore_errors=True)
+                ok = False
             if not ok and "url_fallback" in m:
                 print(f"  Резерв: скачиваем с alphacephei.com...")
                 dest_fb = VOSK_DIR / m["dir_fallback"]
-                if not dest_fb.exists():
+                if not _is_valid_vosk_dir(dest_fb):
                     download_zip(m["url_fallback"], VOSK_DIR)
                 else:
                     print(f"  ✓ Резервная модель уже есть: {dest_fb.name}")
         else:
             download_zip(m["url"], VOSK_DIR)
-        if dest.exists():
-            print(f"  ✓ Готово: {dest.name}")
+        final = dest if _is_valid_vosk_dir(dest) else VOSK_DIR / m.get("dir_fallback", m["dir"])
+        if _is_valid_vosk_dir(final):
+            print(f"  ✓ Готово: {final.name}")
 
 # ─────────────────────────────────────────────────────────────
 #  FASTER-WHISPER  (CTranslate2 int8, от Systran/HuggingFace)
