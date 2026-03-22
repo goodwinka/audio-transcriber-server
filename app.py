@@ -287,10 +287,7 @@ def gigaam_transcribe(wav_path: str, model_id: str) -> str:
         hf_id = next((m["hf"] for m in GIGAAM_MODELS if m["id"] == model_id), model_id)
         print(f"[*] Загрузка GigaAM {model_id}...")
         if GIGAAM_DIR.exists():
-            try:
-                _cache[key] = _onnx_asr.load_model(str(GIGAAM_DIR / hf_id.split("-")[-1]))
-            except Exception:
-                _cache[key] = _onnx_asr.load_model(hf_id)
+            _cache[key] = _onnx_asr.load_model(hf_id, str(GIGAAM_DIR))
         else:
             _cache[key] = _onnx_asr.load_model(hf_id)
         print(f"[✓] GigaAM {model_id} загружена")
