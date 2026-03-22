@@ -247,7 +247,7 @@ def convert_to_wav(src: str) -> str:
     dst = src.rsplit(".", 1)[0] + "_converted.wav"
     r = subprocess.run(
         ["ffmpeg", "-y", "-i", src, "-ar", "16000", "-ac", "1", "-sample_fmt", "s16", dst],
-        capture_output=True, text=True, timeout=300,
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300,
     )
     if r.returncode != 0:
         raise RuntimeError(f"ffmpeg ошибка: {r.stderr[:500]}")
