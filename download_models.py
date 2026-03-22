@@ -95,8 +95,14 @@ VOSK_MODELS = [
 ]
 
 def _is_valid_vosk_dir(path: Path) -> bool:
-    """Проверяет наличие файлов модели Vosk в директории."""
-    return path.is_dir() and (path / "am").is_dir()
+    """Проверяет, что директория содержит настоящие файлы модели Vosk.
+    Проверяет am/ и наличие бинарных файлов > 1 МБ (защита от LFS-заглушек)."""
+    if not (path / "am").is_dir():
+        return False
+    return any(
+        f.is_file() and f.stat().st_size > 1_000_000
+        for f in (path / "am").rglob("*")
+    )
 
 def download_vosk_models():
     print("\n━━━ Vosk модели ━━━")
@@ -108,9 +114,10 @@ def download_vosk_models():
         print(f"\n► {m['name']}")
         if "hf" in m:
             ok = try_hf_download(m["hf"], dest)
-            # HF download may succeed but produce invalid/incomplete model files
+            # HF download может загрузить LFS pointer-файлы вместо бинарников —
+            # snapshot_download завершается без ошибок, но am/ содержит файлы < 1 МБ
             if ok and not _is_valid_vosk_dir(dest):
-                print(f"  HF: файлы модели не обнаружены, удаляем и пробуем резервный URL...")
+                print(f"  HF: скачаны LFS pointer-файлы вместо модели, переключаемся на прямой URL...")
                 import shutil
                 if dest.exists():
                     shutil.rmtree(dest, ignore_errors=True)

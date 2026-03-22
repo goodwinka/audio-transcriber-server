@@ -74,8 +74,14 @@ VOSK_KNOWN = {
 }
 
 def _vosk_model_valid(p: Path) -> bool:
-    """Проверяет наличие файлов модели Vosk (папка am/ обязательна)."""
-    return p.is_dir() and (p / "am").is_dir()
+    """Проверяет, что директория содержит настоящие файлы модели Vosk.
+    Наличие am/ с бинарниками > 1 МБ исключает LFS pointer-заглушки."""
+    if not (p / "am").is_dir():
+        return False
+    return any(
+        f.is_file() and f.stat().st_size > 1_000_000
+        for f in (p / "am").rglob("*")
+    )
 
 def _vosk_path(model_id: str) -> Path:
     info = VOSK_KNOWN.get(model_id)
