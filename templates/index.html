@@ -10,18 +10,19 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg: #0f1115;
-            --surface: #1a1d24;
-            --surface-2: #22262f;
-            --border: #2e333d;
-            --text: #e4e6eb;
-            --text-dim: #8b8f99;
-            --accent: #4a9eff;
+            --bg:          #0f1115;
+            --surface:     #1a1d24;
+            --surface-2:   #22262f;
+            --border:      #2e333d;
+            --text:        #e4e6eb;
+            --text-dim:    #8b8f99;
+            --accent:      #4a9eff;
             --accent-glow: rgba(74, 158, 255, 0.15);
-            --green: #3dd68c;
-            --red: #ff5c5c;
-            --mono: 'JetBrains Mono', monospace;
-            --sans: 'Source Sans 3', system-ui, sans-serif;
+            --green:       #3dd68c;
+            --red:         #ff5c5c;
+            --yellow:      #f5c542;
+            --mono:        'JetBrains Mono', monospace;
+            --sans:        'Source Sans 3', system-ui, sans-serif;
         }
 
         body {
@@ -36,71 +37,58 @@
 
         header {
             width: 100%;
-            padding: 1.5rem 2rem;
+            padding: 1.25rem 2rem;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             gap: 0.75rem;
         }
-
-        header svg { flex-shrink: 0; }
-
-        header h1 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-        }
-
-        header span {
-            font-size: 0.8rem;
-            color: var(--text-dim);
+        header h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+        header .engine-badge {
             margin-left: auto;
             font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.2rem 0.6rem;
         }
 
         main {
             width: 100%;
-            max-width: 720px;
-            padding: 2rem 1.5rem;
+            max-width: 740px;
+            padding: 1.75rem 1.5rem;
             flex: 1;
         }
 
-        /* ── Upload Zone ── */
+        /* ── Upload ── */
         .upload-zone {
             border: 2px dashed var(--border);
             border-radius: 12px;
-            padding: 3rem 2rem;
+            padding: 2.5rem 2rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
             position: relative;
         }
-
         .upload-zone:hover, .upload-zone.dragover {
             border-color: var(--accent);
             background: var(--accent-glow);
         }
-
         .upload-zone input {
             position: absolute;
             inset: 0;
             opacity: 0;
             cursor: pointer;
         }
-
-        .upload-zone svg { margin-bottom: 1rem; }
-
-        .upload-zone p {
-            color: var(--text-dim);
-            font-size: 0.95rem;
-            line-height: 1.6;
-        }
-
+        .upload-zone svg { margin-bottom: 0.75rem; }
+        .upload-zone p { color: var(--text-dim); font-size: 0.9rem; line-height: 1.6; }
         .upload-zone .formats {
             font-family: var(--mono);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: var(--text-dim);
-            margin-top: 0.5rem;
+            margin-top: 0.4rem;
             opacity: 0.7;
         }
 
@@ -110,41 +98,80 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 1rem 1.25rem;
-            margin-top: 1rem;
+            padding: 0.85rem 1.1rem;
+            margin-top: 0.75rem;
             align-items: center;
             gap: 1rem;
         }
-
         .file-info.visible { display: flex; }
-
         .file-info .name {
             flex: 1;
             font-family: var(--mono);
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        .file-info .size {
-            color: var(--text-dim);
-            font-size: 0.8rem;
-            font-family: var(--mono);
-            flex-shrink: 0;
-        }
-
-        .file-info .remove {
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            cursor: pointer;
-            padding: 0.25rem;
-            font-size: 1.2rem;
-            line-height: 1;
-        }
-
+        .file-info .size { color: var(--text-dim); font-size: 0.78rem; font-family: var(--mono); flex-shrink: 0; }
+        .file-info .remove { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0.2rem; }
         .file-info .remove:hover { color: var(--red); }
+
+        /* ── Settings Panel ── */
+        .settings {
+            margin-top: 0.85rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem 1rem;
+        }
+
+        .settings label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-bottom: 0.3rem;
+            font-family: var(--mono);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .settings select {
+            width: 100%;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 0.88rem;
+            padding: 0.45rem 0.7rem;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8f99' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.6rem center;
+            padding-right: 2rem;
+        }
+        .settings select:focus { outline: none; border-color: var(--accent); }
+
+        .settings .field-ov-device { display: none; }
+        .settings .field-ov-device.visible { display: block; }
+
+        .notice {
+            grid-column: 1 / -1;
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            font-family: var(--mono);
+            padding: 0.5rem 0.75rem;
+            background: var(--surface-2);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+            display: none;
+        }
+        .notice.visible { display: block; }
+        .notice.warn { border-color: var(--yellow); }
 
         /* ── Button ── */
         .btn {
@@ -153,8 +180,8 @@
             justify-content: center;
             gap: 0.5rem;
             width: 100%;
-            padding: 0.9rem 1.5rem;
-            margin-top: 1rem;
+            padding: 0.85rem 1.5rem;
+            margin-top: 0.85rem;
             border: none;
             border-radius: 10px;
             font-family: var(--sans);
@@ -163,46 +190,16 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #fff;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            filter: brightness(1.1);
-            transform: translateY(-1px);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .btn-download {
-            background: var(--surface-2);
-            color: var(--green);
-            border: 1px solid var(--border);
-            margin-top: 0.75rem;
-        }
-
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-download { background: var(--surface-2); color: var(--green); border: 1px solid var(--border); margin-top: 0.75rem; }
         .btn-download:hover { background: var(--surface); }
 
         /* ── Progress ── */
-        .progress {
-            display: none;
-            margin-top: 1.5rem;
-        }
-
+        .progress { display: none; margin-top: 1.25rem; }
         .progress.visible { display: block; }
-
-        .progress-bar-track {
-            height: 4px;
-            background: var(--surface-2);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
+        .progress-bar-track { height: 4px; background: var(--surface-2); border-radius: 2px; overflow: hidden; }
         .progress-bar-fill {
             height: 100%;
             background: var(--accent);
@@ -210,222 +207,106 @@
             width: 0%;
             animation: indeterminate 1.5s ease-in-out infinite;
         }
-
         @keyframes indeterminate {
             0%   { width: 0%;  margin-left: 0; }
             50%  { width: 60%; margin-left: 20%; }
             100% { width: 0%;  margin-left: 100%; }
         }
-
-        .progress-text {
-            font-family: var(--mono);
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            margin-top: 0.5rem;
-            text-align: center;
-        }
+        .progress-text { font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim); margin-top: 0.5rem; text-align: center; }
 
         /* ── Result ── */
-        .result {
-            display: none;
-            margin-top: 1.5rem;
-        }
-
+        .result { display: none; margin-top: 1.25rem; }
         .result.visible { display: block; }
-
-        .result-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.75rem;
-        }
-
-        .result-header h2 {
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-
-        .stats {
-            display: flex;
-            gap: 1rem;
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            color: var(--text-dim);
-        }
-
+        .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+        .result-header h2 { font-size: 0.9rem; font-weight: 600; }
+        .stats { display: flex; flex-wrap: wrap; gap: 0.75rem; font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim); }
         .stats .speed { color: var(--green); }
-
+        .stats .eng   { color: var(--accent); }
         .result-text {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 1.25rem;
-            font-size: 0.95rem;
+            padding: 1.1rem;
+            font-size: 0.92rem;
             line-height: 1.8;
-            max-height: 400px;
+            max-height: 380px;
             overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
         }
-
-        .result-text::-webkit-scrollbar { width: 6px; }
+        .result-text::-webkit-scrollbar { width: 5px; }
         .result-text::-webkit-scrollbar-track { background: transparent; }
-        .result-text::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
-        }
+        .result-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
         /* ── Error ── */
-        .error {
-            display: none;
-            margin-top: 1rem;
-            padding: 0.9rem 1.25rem;
-            background: rgba(255, 92, 92, 0.1);
-            border: 1px solid rgba(255, 92, 92, 0.3);
-            border-radius: 10px;
-            color: var(--red);
-            font-size: 0.9rem;
-        }
-
+        .error { display: none; margin-top: 0.85rem; padding: 0.85rem 1.1rem; background: rgba(255,92,92,.1); border: 1px solid rgba(255,92,92,.3); border-radius: 10px; color: var(--red); font-size: 0.88rem; white-space: pre-wrap; }
         .error.visible { display: block; }
 
         /* ── History ── */
-        .history {
-            margin-top: 2.5rem;
-        }
-
-        .history-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.75rem;
-        }
-
-        .history-header h2 {
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-
-        .history-count {
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            color: var(--text-dim);
-        }
-
-        .history-empty {
-            color: var(--text-dim);
-            font-size: 0.85rem;
-            font-family: var(--mono);
-            text-align: center;
-            padding: 1.5rem;
-            border: 1px dashed var(--border);
-            border-radius: 10px;
-        }
-
-        .history-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
+        .history { margin-top: 2rem; }
+        .history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+        .history-header h2 { font-size: 0.9rem; font-weight: 600; }
+        .history-count { font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim); }
+        .history-empty { color: var(--text-dim); font-size: 0.82rem; font-family: var(--mono); text-align: center; padding: 1.25rem; border: 1px dashed var(--border); border-radius: 10px; }
+        .history-list { display: flex; flex-direction: column; gap: 0.5rem; }
         .history-item {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 0.9rem 1.1rem;
+            padding: 0.85rem 1rem;
             display: grid;
             grid-template-columns: 1fr auto;
             grid-template-rows: auto auto;
-            gap: 0.25rem 1rem;
+            gap: 0.2rem 1rem;
             transition: border-color 0.15s;
         }
+        .history-item:hover { border-color: var(--accent); }
+        .history-item .h-name { font-size: 0.83rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .history-item .h-preview { font-size: 0.78rem; color: var(--text-dim); grid-column: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .history-item .h-meta { font-family: var(--mono); font-size: 0.7rem; color: var(--text-dim); text-align: right; grid-row: 1; grid-column: 2; white-space: nowrap; }
+        .history-item .h-download { grid-row: 2; grid-column: 2; text-align: right; font-family: var(--mono); font-size: 0.72rem; color: var(--accent); text-decoration: none; }
+        .history-item .h-download:hover { text-decoration: underline; }
 
-        .history-item:hover {
-            border-color: var(--accent);
-        }
-
-        .history-item .h-name {
-            font-size: 0.85rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .history-item .h-preview {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            grid-column: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .history-item .h-meta {
-            font-family: var(--mono);
-            font-size: 0.72rem;
-            color: var(--text-dim);
-            text-align: right;
-            grid-row: 1;
-            grid-column: 2;
-            white-space: nowrap;
-        }
-
-        .history-item .h-download {
-            grid-row: 2;
-            grid-column: 2;
-            text-align: right;
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        .history-item .h-download:hover {
-            text-decoration: underline;
-        }
-
-        /* ── Footer ── */
         footer {
             width: 100%;
-            padding: 1rem 2rem;
+            padding: 0.85rem 2rem;
             border-top: 1px solid var(--border);
             text-align: center;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: var(--text-dim);
             font-family: var(--mono);
         }
 
-        @media (max-width: 600px) {
-            main { padding: 1.5rem 1rem; }
-            .upload-zone { padding: 2rem 1rem; }
-            .stats { gap: 0.5rem; font-size: 0.7rem; }
+        @media (max-width: 540px) {
+            main { padding: 1.25rem 0.9rem; }
+            .settings { grid-template-columns: 1fr; }
+            .stats { gap: 0.5rem; font-size: 0.68rem; }
         }
     </style>
 </head>
 <body>
 
 <header>
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
         <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
         <line x1="12" x2="12" y1="19" y2="22"/>
     </svg>
     <h1>Транскрипция аудио</h1>
-    <span>vosk</span>
+    <span class="engine-badge" id="headerBadge">загрузка...</span>
 </header>
 
 <main>
     <!-- Upload -->
     <div class="upload-zone" id="dropZone">
         <input type="file" id="fileInput" accept=".wav,.mp3,.ogg,.flac,.m4a,.aac,.wma,.webm">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="17 8 12 3 7 8"/>
             <line x1="12" x2="12" y1="3" y2="15"/>
         </svg>
         <p>Перетащите аудиофайл сюда<br>или нажмите для выбора</p>
-        <div class="formats">wav · mp3 · ogg · flac · m4a · aac · webm</div>
+        <div class="formats">wav · mp3 · ogg · flac · m4a · aac · wma · webm</div>
     </div>
 
     <!-- File Info -->
@@ -435,9 +316,37 @@
         <button class="remove" id="removeFile" title="Удалить">×</button>
     </div>
 
+    <!-- Settings -->
+    <div class="settings" id="settingsPanel">
+        <div>
+            <label>Движок</label>
+            <select id="selEngine"></select>
+        </div>
+        <div>
+            <label>Модель</label>
+            <select id="selModel"></select>
+        </div>
+        <div>
+            <label>Язык</label>
+            <select id="selLanguage">
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+                <option value="de">Deutsch</option>
+                <option value="fr">Français</option>
+                <option value="zh">中文</option>
+                <option value="auto">Авто-определение</option>
+            </select>
+        </div>
+        <div class="field-ov-device" id="fieldOvDevice">
+            <label>OpenVINO устройство</label>
+            <select id="selOvDevice"></select>
+        </div>
+        <div class="notice" id="engineNotice"></div>
+    </div>
+
     <!-- Transcribe Button -->
     <button class="btn btn-primary" id="transcribeBtn" disabled>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="5 3 19 12 5 21 5 3"/>
         </svg>
         Транскрибировать
@@ -445,9 +354,7 @@
 
     <!-- Progress -->
     <div class="progress" id="progress">
-        <div class="progress-bar-track">
-            <div class="progress-bar-fill"></div>
-        </div>
+        <div class="progress-bar-track"><div class="progress-bar-fill"></div></div>
         <div class="progress-text" id="progressText">Конвертация и распознавание...</div>
     </div>
 
@@ -462,7 +369,7 @@
         </div>
         <div class="result-text" id="resultText"></div>
         <a class="btn btn-download" id="downloadBtn" href="#">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" x2="12" y1="15" y2="3"/>
@@ -470,10 +377,11 @@
             Скачать .txt
         </a>
     </div>
+
     <!-- History -->
     <div class="history" id="historySection">
         <div class="history-header">
-            <h2>История транскрипций</h2>
+            <h2>История</h2>
             <span class="history-count" id="historyCount"></span>
         </div>
         <div id="historyContent">
@@ -482,168 +390,251 @@
     </div>
 </main>
 
-<footer>макс. размер файла: 500 МБ</footer>
+<footer>макс. файл: 500 МБ · имя .txt совпадает с именем аудио</footer>
 
 <script>
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const fileInfo = document.getElementById('fileInfo');
-    const fileName = document.getElementById('fileName');
-    const fileSize = document.getElementById('fileSize');
-    const removeFile = document.getElementById('removeFile');
-    const transcribeBtn = document.getElementById('transcribeBtn');
-    const progress = document.getElementById('progress');
-    const progressText = document.getElementById('progressText');
-    const errorDiv = document.getElementById('error');
-    const result = document.getElementById('result');
-    const resultText = document.getElementById('resultText');
-    const stats = document.getElementById('stats');
-    const downloadBtn = document.getElementById('downloadBtn');
+// ── DOM refs ──────────────────────────────────────────────────
+const dropZone      = document.getElementById('dropZone');
+const fileInput     = document.getElementById('fileInput');
+const fileInfo      = document.getElementById('fileInfo');
+const fileName      = document.getElementById('fileName');
+const fileSize      = document.getElementById('fileSize');
+const removeFile    = document.getElementById('removeFile');
+const transcribeBtn = document.getElementById('transcribeBtn');
+const progress      = document.getElementById('progress');
+const progressText  = document.getElementById('progressText');
+const errorDiv      = document.getElementById('error');
+const result        = document.getElementById('result');
+const resultText    = document.getElementById('resultText');
+const stats         = document.getElementById('stats');
+const downloadBtn   = document.getElementById('downloadBtn');
+const selEngine     = document.getElementById('selEngine');
+const selModel      = document.getElementById('selModel');
+const selLanguage   = document.getElementById('selLanguage');
+const selOvDevice   = document.getElementById('selOvDevice');
+const fieldOvDevice = document.getElementById('fieldOvDevice');
+const engineNotice  = document.getElementById('engineNotice');
+const headerBadge   = document.getElementById('headerBadge');
 
-    let selectedFile = null;
+// ── Engines data ──────────────────────────────────────────────
+let enginesData = [];
 
-    function formatSize(bytes) {
-        if (bytes < 1024) return bytes + ' Б';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' КБ';
-        return (bytes / (1024 * 1024)).toFixed(1) + ' МБ';
+async function loadEngines() {
+    try {
+        const r = await fetch('/engines');
+        enginesData = await r.json();
+    } catch {
+        enginesData = [];
     }
 
-    function formatDuration(sec) {
-        const m = Math.floor(sec / 60);
-        const s = Math.floor(sec % 60);
-        return m > 0 ? `${m}м ${s}с` : `${s}с`;
+    if (enginesData.length === 0) {
+        selEngine.innerHTML = '<option value="">Нет доступных движков</option>';
+        engineNotice.textContent = 'Ни один движок не установлен. Запустите install.bat';
+        engineNotice.className = 'notice warn visible';
+        headerBadge.textContent = 'нет движка';
+        return;
     }
 
-    function setFile(file) {
-        selectedFile = file;
-        fileName.textContent = file.name;
-        fileSize.textContent = formatSize(file.size);
-        fileInfo.classList.add('visible');
+    selEngine.innerHTML = enginesData.map(e =>
+        `<option value="${e.id}">${e.name} — ${e.description}</option>`
+    ).join('');
+
+    onEngineChange();
+}
+
+function onEngineChange() {
+    const eng = enginesData.find(e => e.id === selEngine.value);
+    if (!eng) return;
+
+    // Модели
+    selModel.innerHTML = eng.models.map(m => {
+        const badge = m.available === false ? ' [нужна загрузка]' :
+                      (m.downloaded === false ? ' [скачается автоматически]' : '');
+        return `<option value="${m.id}">${m.name}${badge}</option>`;
+    }).join('');
+
+    // OpenVINO устройства
+    if (eng.id === 'openvino' && eng.devices && eng.devices.length) {
+        selOvDevice.innerHTML = eng.devices.map(d =>
+            `<option value="${d}"${d.includes('GPU') ? ' selected' : ''}>${d}</option>`
+        ).join('');
+        fieldOvDevice.classList.add('visible');
+    } else {
+        fieldOvDevice.classList.remove('visible');
+    }
+
+    // Замечание для языка
+    const langField = selLanguage.closest('div');
+    if (eng.id === 'vosk') {
+        langField.style.opacity = '0.45';
+        langField.title = 'Язык определяется моделью Vosk';
+        selLanguage.disabled = true;
+    } else {
+        langField.style.opacity = '';
+        langField.title = '';
+        selLanguage.disabled = false;
+    }
+
+    // Notice
+    if (eng.id === 'faster_whisper') {
+        engineNotice.textContent = 'CPU int8 — оптимально для Intel. Первый запуск: модель скачается автоматически (~75..3000 МБ).';
+        engineNotice.className = 'notice visible';
+    } else if (eng.id === 'openvino') {
+        const gpu = (eng.devices || []).filter(d => d.includes('GPU'));
+        engineNotice.textContent = gpu.length
+            ? `Intel GPU обнаружен: ${gpu.join(', ')}. Первый запуск: модель будет конвертирована в формат OpenVINO.`
+            : 'Intel GPU не обнаружен — будет использован OpenVINO CPU.';
+        engineNotice.className = 'notice visible' + (gpu.length ? '' : ' warn');
+    } else {
+        engineNotice.className = 'notice';
+    }
+
+    updateBadge();
+}
+
+function updateBadge() {
+    const eng = enginesData.find(e => e.id === selEngine.value);
+    if (!eng) return;
+    const mod = selModel.value;
+    headerBadge.textContent = `${eng.name} · ${mod}`;
+}
+
+selEngine.addEventListener('change', onEngineChange);
+selModel.addEventListener('change', updateBadge);
+
+// ── File handling ──────────────────────────────────────────────
+let selectedFile = null;
+
+function fmtSize(b) {
+    if (b < 1024) return b + ' Б';
+    if (b < 1048576) return (b / 1024).toFixed(1) + ' КБ';
+    return (b / 1048576).toFixed(1) + ' МБ';
+}
+function fmtDur(s) {
+    const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+    return m > 0 ? `${m}м ${sec}с` : `${sec}с`;
+}
+
+function setFile(file) {
+    selectedFile = file;
+    fileName.textContent = file.name;
+    fileSize.textContent = fmtSize(file.size);
+    fileInfo.classList.add('visible');
+    transcribeBtn.disabled = false;
+    errorDiv.classList.remove('visible');
+}
+function clearFile() {
+    selectedFile = null;
+    fileInput.value = '';
+    fileInfo.classList.remove('visible');
+    transcribeBtn.disabled = true;
+}
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) setFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files.length) setFile(fileInput.files[0]); });
+removeFile.addEventListener('click', e => { e.stopPropagation(); clearFile(); });
+
+// ── History ───────────────────────────────────────────────────
+async function loadHistory() {
+    try {
+        const r = await fetch('/history');
+        renderHistory(await r.json());
+    } catch {}
+}
+
+function fmtDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderHistory(items) {
+    const container = document.getElementById('historyContent');
+    const count     = document.getElementById('historyCount');
+    if (!items || !items.length) {
+        container.innerHTML = '<div class="history-empty">Нет транскрипций</div>';
+        count.textContent = '';
+        return;
+    }
+    count.textContent = `${items.length} файл${items.length===1?'':items.length<5?'а':'ов'}`;
+    const list = document.createElement('div');
+    list.className = 'history-list';
+    items.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'history-item';
+        const dur = item.stats ? fmtDur(item.stats.duration_sec) : '';
+        const eng = item.stats ? ` · ${item.stats.engine||''}` : '';
+        el.innerHTML = `
+            <span class="h-name">${item.original_name || item.id}</span>
+            <span class="h-meta">${fmtDate(item.created_at)}${dur?' · '+dur:''}${eng}</span>
+            <span class="h-preview">${item.preview || ''}</span>
+            <a class="h-download" href="${item.download}" download>скачать .txt</a>
+        `;
+        list.appendChild(el);
+    });
+    container.innerHTML = '';
+    container.appendChild(list);
+}
+
+// ── Transcribe ────────────────────────────────────────────────
+transcribeBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+
+    transcribeBtn.disabled = true;
+    progress.classList.add('visible');
+    result.classList.remove('visible');
+    errorDiv.classList.remove('visible');
+    progressText.textContent = 'Конвертация аудио...';
+
+    const eng = selEngine.value;
+    if (eng === 'faster_whisper') {
+        progressText.textContent = 'Загрузка модели и распознавание (может занять минуту при первом запуске)...';
+    } else if (eng === 'openvino') {
+        progressText.textContent = 'OpenVINO: конвертация модели и распознавание...';
+    }
+
+    const fd = new FormData();
+    fd.append('audio',     selectedFile);
+    fd.append('engine',    selEngine.value);
+    fd.append('model',     selModel.value);
+    fd.append('language',  selLanguage.value);
+    fd.append('ov_device', selOvDevice.value || 'GPU');
+
+    try {
+        const resp = await fetch('/transcribe', { method: 'POST', body: fd });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Ошибка сервера');
+
+        resultText.textContent = data.text;
+        downloadBtn.href = data.download;
+
+        const s = data.stats;
+        stats.innerHTML = `
+            <span>аудио: ${fmtDur(s.duration_sec)}</span>
+            <span>обработка: ${s.total_sec}с</span>
+            <span class="speed">×${s.speed_x} скорость</span>
+            <span class="eng">${s.engine} · ${s.model}</span>
+        `;
+
+        result.classList.add('visible');
+        loadHistory();
+    } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.classList.add('visible');
+    } finally {
+        progress.classList.remove('visible');
         transcribeBtn.disabled = false;
-        errorDiv.classList.remove('visible');
     }
+});
 
-    function clearFile() {
-        selectedFile = null;
-        fileInput.value = '';
-        fileInfo.classList.remove('visible');
-        transcribeBtn.disabled = true;
-    }
-
-    // Drag & drop
-    dropZone.addEventListener('dragover', e => {
-        e.preventDefault();
-        dropZone.classList.add('dragover');
-    });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', e => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        if (e.dataTransfer.files.length) setFile(e.dataTransfer.files[0]);
-    });
-
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length) setFile(fileInput.files[0]);
-    });
-
-    removeFile.addEventListener('click', e => {
-        e.stopPropagation();
-        clearFile();
-    });
-
-    // History
-    async function loadHistory() {
-        try {
-            const resp = await fetch('/history');
-            const items = await resp.json();
-            renderHistory(items);
-        } catch (e) {
-            // ignore
-        }
-    }
-
-    function formatDate(iso) {
-        const d = new Date(iso);
-        return d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function renderHistory(items) {
-        const container = document.getElementById('historyContent');
-        const count = document.getElementById('historyCount');
-
-        if (!items || items.length === 0) {
-            container.innerHTML = '<div class="history-empty">Нет транскрипций</div>';
-            count.textContent = '';
-            return;
-        }
-
-        count.textContent = `${items.length} файл${items.length === 1 ? '' : items.length < 5 ? 'а' : 'ов'}`;
-
-        const list = document.createElement('div');
-        list.className = 'history-list';
-
-        items.forEach(item => {
-            const el = document.createElement('div');
-            el.className = 'history-item';
-            const dur = item.stats ? `${item.stats.duration_sec}с` : '';
-            el.innerHTML = `
-                <span class="h-name">${item.original_name || item.id}</span>
-                <span class="h-meta">${formatDate(item.created_at)}${dur ? ' · ' + dur : ''}</span>
-                <span class="h-preview">${item.preview || ''}</span>
-                <a class="h-download" href="${item.download}" download>скачать .txt</a>
-            `;
-            list.appendChild(el);
-        });
-
-        container.innerHTML = '';
-        container.appendChild(list);
-    }
-
-    loadHistory();
-
-    // Transcribe
-    transcribeBtn.addEventListener('click', async () => {
-        if (!selectedFile) return;
-
-        transcribeBtn.disabled = true;
-        progress.classList.add('visible');
-        result.classList.remove('visible');
-        errorDiv.classList.remove('visible');
-        progressText.textContent = 'Загрузка и конвертация...';
-
-        const formData = new FormData();
-        formData.append('audio', selectedFile);
-
-        try {
-            const resp = await fetch('/transcribe', { method: 'POST', body: formData });
-            const data = await resp.json();
-
-            if (!resp.ok) {
-                throw new Error(data.error || 'Ошибка сервера');
-            }
-
-            // Показываем результат
-            resultText.textContent = data.text;
-            downloadBtn.href = data.download;
-
-            const s = data.stats;
-            stats.innerHTML = `
-                <span>аудио: ${formatDuration(s.duration_sec)}</span>
-                <span>обработка: ${s.total_sec}с</span>
-                <span class="speed">×${s.speed_x} скорость</span>
-            `;
-
-            result.classList.add('visible');
-            loadHistory();
-
-        } catch (err) {
-            errorDiv.textContent = err.message;
-            errorDiv.classList.add('visible');
-        } finally {
-            progress.classList.remove('visible');
-            transcribeBtn.disabled = false;
-        }
-    });
+// ── Init ──────────────────────────────────────────────────────
+loadEngines();
+loadHistory();
 </script>
 
 </body>
