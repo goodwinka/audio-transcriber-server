@@ -678,7 +678,7 @@ def download(filename):
     path = OUTPUT_DIR / filename
     if not path.exists():
         return "Файл не найден", 404
-    return send_file(path, as_attachment=True, download_name=filename)
+    return send_file(path, as_attachment=True, download_name=filename, mimetype='text/plain; charset=utf-8')
 
 
 if __name__ == "__main__":
