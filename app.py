@@ -287,10 +287,7 @@ def gigaam_transcribe(wav_path: str, model_id: str) -> str:
         hf_id = next((m["hf"] for m in GIGAAM_MODELS if m["id"] == model_id), model_id)
         print(f"[*] Загрузка GigaAM {model_id}...")
         if GIGAAM_DIR.exists():
-            try:
-                _cache[key] = _onnx_asr.load_model(str(GIGAAM_DIR / hf_id.split("-")[-1]))
-            except Exception:
-                _cache[key] = _onnx_asr.load_model(hf_id)
+            _cache[key] = _onnx_asr.load_model(hf_id, str(GIGAAM_DIR))
         else:
             _cache[key] = _onnx_asr.load_model(hf_id)
         print(f"[✓] GigaAM {model_id} загружена")
@@ -348,17 +345,65 @@ def ggml_list() -> list:
         result.append({"id": m["id"], "name": m["name"], "available": (GGML_DIR / m["file"]).exists()})
     return result
 
+def _ggml_find_binary() -> str | None:
+    """Ищет бинарник whisper.cpp в PATH и рядом со скриптом."""
+    import shutil
+    for name in ("whisper-cli", "whisper-cli.exe", "main", "main.exe"):
+        found = shutil.which(name)
+        if found:
+            return found
+    # рядом со скриптом / в подпапке
+    here = Path(__file__).parent
+    for rel in ("whisper-cli.exe", "main.exe", "whisper.cpp/main.exe",
+                "whisper-cli", "main", "whisper.cpp/main"):
+        p = here / rel
+        if p.exists():
+            return str(p)
+    return None
+
+def _ggml_transcribe_subprocess(wav_path: str, model_file: Path, language: str) -> str:
+    """Вызывает whisper.cpp бинарник напрямую (без pywhispercpp)."""
+    exe = _ggml_find_binary()
+    if not exe:
+        raise RuntimeError(
+            "GGML требует pywhispercpp или бинарник whisper.cpp в PATH.\n"
+            "  Вариант 1 (бинарник): скачайте whisper.cpp с\n"
+            "    https://github.com/ggerganov/whisper.cpp/releases\n"
+            "    и положите main.exe / whisper-cli.exe рядом с app.py\n"
+            "  Вариант 2 (Python): pip install pywhispercpp\n"
+            "    (требует CMake + Visual Studio Build Tools)"
+        )
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        out_base = os.path.join(tmp, "out")
+        lang = language if language != "auto" else "auto"
+        r = subprocess.run(
+            [exe, "-m", str(model_file), "-f", wav_path,
+             "-l", lang, "-otxt", "-of", out_base, "--no-prints"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600,
+        )
+        out_file = out_base + ".txt"
+        if os.path.exists(out_file):
+            text = open(out_file, encoding="utf-8").read().strip()
+            return format_text([text] if text else [])
+        if r.returncode == 0 and r.stdout.strip():
+            return format_text([r.stdout.strip()])
+        raise RuntimeError(f"whisper.cpp ошибка (код {r.returncode}): {r.stderr[:400]}")
+
 def ggml_transcribe(wav_path: str, model_id: str, language: str = "ru") -> str:
+    m = next((x for x in GGML_MODELS if x["id"] == model_id), None)
+    if not m:
+        raise ValueError(f"Неизвестная GGML модель: {model_id}")
+    model_file = GGML_DIR / m["file"]
+    if not model_file.exists():
+        raise FileNotFoundError(f"GGML файл не найден: {model_file}")
+
     if not _ggml_ok:
-        raise RuntimeError("Для GGML нужно установить:\n  pip install pywhispercpp")
+        # fallback: subprocess
+        return _ggml_transcribe_subprocess(wav_path, model_file, language)
+
     key = f"ggml:{model_id}"
     if key not in _cache:
-        m = next((x for x in GGML_MODELS if x["id"] == model_id), None)
-        if not m:
-            raise ValueError(f"Неизвестная GGML модель: {model_id}")
-        model_file = GGML_DIR / m["file"]
-        if not model_file.exists():
-            raise FileNotFoundError(f"GGML файл не найден: {model_file}")
         print(f"[*] Загрузка GGML {model_id}...")
         _cache[key] = _GgmlModel(str(model_file), print_realtime=False, print_progress=False)
         print(f"[✓] GGML {model_id} загружена")
