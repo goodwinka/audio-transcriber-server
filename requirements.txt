@@ -11,3 +11,12 @@ vosk==0.3.*
 # openvino>=2024.0
 # optimum[openvino]
 # transformers
+
+# ── GigaAM v3 ONNX (русский ASR) ─────────────────────────────
+# pip install onnx-asr[cpu,hub]
+
+# ── Whisper HF (через HuggingFace transformers) ───────────────
+# pip install transformers torch
+
+# ── GGML (whisper.cpp через pywhispercpp) ────────────────────
+# pip install pywhispercpp

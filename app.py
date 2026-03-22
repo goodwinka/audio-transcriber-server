@@ -4,6 +4,9 @@
   vosk          — Vosk, CPU, быстро, офлайн
   faster_whisper — Faster-Whisper, CPU int8, лучшее качество (оптимально для Intel)
   openvino      — OpenVINO, Intel iGPU/CPU, требует optimum[openvino]
+  gigaam        — GigaAM v3 ONNX, русский ASR, требует onnx-asr
+  whisper_hf    — OpenAI Whisper через HuggingFace transformers
+  ggml          — Whisper GGML через pywhispercpp
 """
 
 import os, json, wave, subprocess, time, re
@@ -27,7 +30,7 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_MB * 1024 * 1024
 
 # ── Определение доступных движков ──────────────────────────────
-_vosk_ok = _fw_ok = _ov_ok = False
+_vosk_ok = _fw_ok = _ov_ok = _gigaam_ok = _whisper_hf_ok = _ggml_ok = False
 _ov_devices: list[str] = []
 
 try:
@@ -46,6 +49,24 @@ try:
     import openvino as _ov
     _ov_devices = _ov.Core().available_devices   # ['CPU', 'GPU', 'GPU.0', ...]
     _ov_ok = True
+except ImportError:
+    pass
+
+try:
+    import onnx_asr as _onnx_asr
+    _gigaam_ok = True
+except ImportError:
+    pass
+
+try:
+    from transformers import pipeline as _hf_pipeline
+    _whisper_hf_ok = True
+except ImportError:
+    pass
+
+try:
+    from pywhispercpp.model import Model as _GgmlModel
+    _ggml_ok = True
 except ImportError:
     pass
 
@@ -244,6 +265,111 @@ def ov_transcribe(wav_path: str, model_id: str, device: str = "GPU",
 
 
 # ═══════════════════════════════════════════════════════════════
+#  GigaAM v3 ONNX  (русский ASR через onnx-asr)
+# ═══════════════════════════════════════════════════════════════
+GIGAAM_MODELS = [
+    {"id": "gigaam-v3-ctc",  "name": "GigaAM v3 CTC  (~300 МБ)",  "hf": "gigaam-v3-ctc"},
+    {"id": "gigaam-v3-rnnt", "name": "GigaAM v3 RNN-T (~300 МБ)", "hf": "gigaam-v3-rnnt"},
+]
+GIGAAM_DIR = MODELS_DIR / "gigaam" / "gigaam-v3-onnx"
+
+def gigaam_list() -> list:
+    result = []
+    for m in GIGAAM_MODELS:
+        result.append({"id": m["id"], "name": m["name"], "available": GIGAAM_DIR.exists()})
+    return result
+
+def gigaam_transcribe(wav_path: str, model_id: str) -> str:
+    if not _gigaam_ok:
+        raise RuntimeError("Для GigaAM нужно установить:\n  pip install onnx-asr[cpu,hub]")
+    key = f"gigaam:{model_id}"
+    if key not in _cache:
+        hf_id = next((m["hf"] for m in GIGAAM_MODELS if m["id"] == model_id), model_id)
+        print(f"[*] Загрузка GigaAM {model_id}...")
+        if GIGAAM_DIR.exists():
+            try:
+                _cache[key] = _onnx_asr.load_model(str(GIGAAM_DIR / hf_id.split("-")[-1]))
+            except Exception:
+                _cache[key] = _onnx_asr.load_model(hf_id)
+        else:
+            _cache[key] = _onnx_asr.load_model(hf_id)
+        print(f"[✓] GigaAM {model_id} загружена")
+    text = _cache[key].recognize(wav_path)
+    return format_text([text] if text and text.strip() else [])
+
+
+# ═══════════════════════════════════════════════════════════════
+#  Whisper HF  (OpenAI Whisper через HuggingFace transformers)
+# ═══════════════════════════════════════════════════════════════
+WHISPER_HF_MODELS = [
+    {"id": "whisper-hf-tiny",  "name": "Whisper Tiny  (~150 МБ)", "dir": "whisper-tiny"},
+    {"id": "whisper-hf-base",  "name": "Whisper Base  (~290 МБ)", "dir": "whisper-base"},
+    {"id": "whisper-hf-small", "name": "Whisper Small (~950 МБ)", "dir": "whisper-small"},
+]
+WHISPER_HF_DIR = MODELS_DIR / "whisper-hf"
+
+def whisper_hf_list() -> list:
+    result = []
+    for m in WHISPER_HF_MODELS:
+        local = WHISPER_HF_DIR / m["dir"]
+        result.append({"id": m["id"], "name": m["name"], "available": local.exists()})
+    return result
+
+def whisper_hf_transcribe(wav_path: str, model_id: str, language: str = "ru") -> str:
+    if not _whisper_hf_ok:
+        raise RuntimeError("Для Whisper HF нужно установить:\n  pip install transformers torch")
+    key = f"whisper_hf:{model_id}"
+    if key not in _cache:
+        m = next((x for x in WHISPER_HF_MODELS if x["id"] == model_id), None)
+        local = WHISPER_HF_DIR / m["dir"] if m else None
+        model_src = str(local) if local and local.exists() else (m["dir"] if m else model_id)
+        print(f"[*] Загрузка Whisper HF {model_id}...")
+        _cache[key] = _hf_pipeline("automatic-speech-recognition", model=model_src)
+        print(f"[✓] Whisper HF {model_id} загружена")
+    lang = language if language != "auto" else None
+    generate_kwargs = {"language": lang} if lang else {}
+    result = _cache[key](wav_path, generate_kwargs=generate_kwargs)
+    text = result.get("text", "").strip()
+    return format_text([text] if text else [])
+
+
+# ═══════════════════════════════════════════════════════════════
+#  GGML  (Whisper GGML через pywhispercpp)
+# ═══════════════════════════════════════════════════════════════
+GGML_MODELS = [
+    {"id": "ggml-small", "name": "GGML Small  (~460 МБ)", "file": "ggml-small.bin"},
+    {"id": "ggml-turbo", "name": "GGML Turbo  (~1.6 ГБ)", "file": "ggml-large-v3-turbo.bin"},
+]
+GGML_DIR = MODELS_DIR / "ggml"
+
+def ggml_list() -> list:
+    result = []
+    for m in GGML_MODELS:
+        result.append({"id": m["id"], "name": m["name"], "available": (GGML_DIR / m["file"]).exists()})
+    return result
+
+def ggml_transcribe(wav_path: str, model_id: str, language: str = "ru") -> str:
+    if not _ggml_ok:
+        raise RuntimeError("Для GGML нужно установить:\n  pip install pywhispercpp")
+    key = f"ggml:{model_id}"
+    if key not in _cache:
+        m = next((x for x in GGML_MODELS if x["id"] == model_id), None)
+        if not m:
+            raise ValueError(f"Неизвестная GGML модель: {model_id}")
+        model_file = GGML_DIR / m["file"]
+        if not model_file.exists():
+            raise FileNotFoundError(f"GGML файл не найден: {model_file}")
+        print(f"[*] Загрузка GGML {model_id}...")
+        _cache[key] = _GgmlModel(str(model_file), print_realtime=False, print_progress=False)
+        print(f"[✓] GGML {model_id} загружена")
+    lang = language if language != "auto" else None
+    kwargs = {"language": lang} if lang else {}
+    segments = _cache[key].transcribe(wav_path, **kwargs)
+    chunks = [s.text.strip() for s in segments if s.text.strip()]
+    return format_text(chunks)
+
+
+# ═══════════════════════════════════════════════════════════════
 #  Общие утилиты
 # ═══════════════════════════════════════════════════════════════
 def convert_to_wav(src: str) -> str:
@@ -322,6 +448,24 @@ def engines_info():
             "devices": _ov_devices,
             "models": ov_list(),
         })
+    if _gigaam_ok or any(m["available"] for m in gigaam_list()):
+        result.append({
+            "id": "gigaam", "name": "GigaAM",
+            "description": "Русский ASR, ONNX (требует onnx-asr[cpu,hub])",
+            "models": gigaam_list(),
+        })
+    if _whisper_hf_ok or any(m["available"] for m in whisper_hf_list()):
+        result.append({
+            "id": "whisper_hf", "name": "Whisper HF",
+            "description": "OpenAI Whisper через HuggingFace transformers",
+            "models": whisper_hf_list(),
+        })
+    if _ggml_ok or any(m["available"] for m in ggml_list()):
+        result.append({
+            "id": "ggml", "name": "GGML (whisper.cpp)",
+            "description": "Whisper GGML, быстро, CPU (требует pywhispercpp)",
+            "models": ggml_list(),
+        })
     return jsonify(result)
 
 
@@ -364,6 +508,12 @@ def transcribe():
             if not _ov_ok:
                 return jsonify({"error": "OpenVINO не установлен (pip install openvino optimum[openvino] transformers)"}), 400
             text = ov_transcribe(wav_path, model_id, ov_device, language)
+        elif engine == "gigaam":
+            text = gigaam_transcribe(wav_path, model_id)
+        elif engine == "whisper_hf":
+            text = whisper_hf_transcribe(wav_path, model_id, language)
+        elif engine == "ggml":
+            text = ggml_transcribe(wav_path, model_id, language)
         else:
             return jsonify({"error": f"Неизвестный движок: {engine}"}), 400
 
