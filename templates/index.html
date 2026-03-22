@@ -557,6 +557,8 @@ async function loadEngines() {
         `<option value="${e.id}">${e.name} — ${e.description}</option>`
     ).join('');
 
+    if (enginesData.find(e => e.id === 'gigaam')) selEngine.value = 'gigaam';
+
     onEngineChange();
 }
 
@@ -570,6 +572,10 @@ function onEngineChange() {
                       (m.downloaded === false ? ' [скачается автоматически]' : '');
         return `<option value="${m.id}">${m.name}${badge}</option>`;
     }).join('');
+
+    if (eng.id === 'gigaam' && [...selModel.options].some(o => o.value === 'gigaam-v3-e2e-ctc')) {
+        selModel.value = 'gigaam-v3-e2e-ctc';
+    }
 
     // OpenVINO устройства
     if (eng.id === 'openvino' && eng.devices && eng.devices.length) {

@@ -642,4 +642,20 @@ def download(filename):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
+    if _gigaam_ok:
+        def _preload_default_gigaam():
+            model_id = "gigaam-v3-e2e-ctc"
+            key = f"gigaam:{model_id}"
+            hf_id = next((m["hf"] for m in GIGAAM_MODELS if m["id"] == model_id), model_id)
+            print(f"[*] Предзагрузка GigaAM {model_id}...")
+            try:
+                if GIGAAM_DIR.exists():
+                    _cache[key] = _onnx_asr.load_model(hf_id, str(GIGAAM_DIR))
+                else:
+                    _cache[key] = _onnx_asr.load_model(hf_id)
+                print(f"[✓] GigaAM {model_id} предзагружена")
+            except Exception as e:
+                print(f"[!] Ошибка предзагрузки GigaAM: {e}")
+        import threading
+        threading.Thread(target=_preload_default_gigaam, daemon=True).start()
     app.run(host="0.0.0.0", port=port, debug=False)
