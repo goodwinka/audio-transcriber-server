@@ -13,7 +13,7 @@ import os, json, wave, subprocess, time, re
 from datetime import datetime
 from pathlib import Path
 
-from flask import Flask, request, render_template, send_file, jsonify
+from flask import Flask, request, render_template, send_file, jsonify, make_response
 
 # ── Конфигурация ────────────────────────────────────────────────
 MODELS_DIR  = Path(os.environ.get("MODELS_DIR", "models"))
@@ -28,6 +28,7 @@ for d in (MODELS_DIR, UPLOAD_DIR, OUTPUT_DIR):
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_MB * 1024 * 1024
+app.json.ensure_ascii = False  # Serve Cyrillic as-is in JSON responses
 
 # ── Определение доступных движков ──────────────────────────────
 _vosk_ok = _fw_ok = _ov_ok = _gigaam_ok = _whisper_hf_ok = _ggml_ok = False
@@ -508,7 +509,9 @@ def save_history(entry: dict) -> None:
 # ═══════════════════════════════════════════════════════════════
 @app.route("/")
 def index():
-    return render_template("index.html")
+    resp = make_response(render_template("index.html"))
+    resp.headers["Content-Type"] = "text/html; charset=utf-8"
+    return resp
 
 
 @app.route("/engines")
