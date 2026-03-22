@@ -9,6 +9,7 @@ import wave
 import subprocess
 import tempfile
 import time
+from datetime import datetime
 from pathlib import Path
 
 from flask import Flask, request, render_template, send_file, jsonify
@@ -20,6 +21,7 @@ from vosk import Model, KaldiRecognizer
 MODEL_PATH = os.environ.get("VOSK_MODEL", "model")  # путь к модели Vosk
 UPLOAD_DIR = Path("uploads")
 OUTPUT_DIR = Path("outputs")
+HISTORY_FILE = Path("history.json")
 ALLOWED_EXT = {".wav", ".mp3", ".ogg", ".flac", ".m4a", ".aac", ".wma", ".webm"}
 MAX_FILE_MB = 500
 
@@ -94,6 +96,21 @@ def transcribe_wav(wav_path: str) -> str:
     return format_text(chunks)
 
 
+def load_history() -> list:
+    if HISTORY_FILE.exists():
+        try:
+            return json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            return []
+    return []
+
+
+def save_history_entry(entry: dict) -> None:
+    history = load_history()
+    history.insert(0, entry)  # новые — сверху
+    HISTORY_FILE.write_text(json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
 def format_text(chunks: list[str]) -> str:
     """
     Форматирование: капитализация + точки.
@@ -146,6 +163,7 @@ def transcribe():
     upload_path = str(UPLOAD_DIR / safe_name)
     file.save(upload_path)
 
+    wav_path = None
     try:
         t0 = time.time()
 
@@ -174,27 +192,44 @@ def transcribe():
         except Exception:
             duration = 0
 
+        stats = {
+            "duration_sec": round(duration, 1),
+            "convert_sec": round(t_convert, 2),
+            "total_sec": round(t_total, 2),
+            "speed_x": round(duration / t_total, 1) if t_total > 0 else 0,
+        }
+
+        save_history_entry({
+            "id": txt_name,
+            "original_name": file.filename,
+            "download": f"/download/{txt_name}",
+            "created_at": datetime.now().isoformat(timespec="seconds"),
+            "stats": stats,
+            "preview": text[:200],
+        })
+
         return jsonify({
             "text": text,
             "download": f"/download/{txt_name}",
-            "stats": {
-                "duration_sec": round(duration, 1),
-                "convert_sec": round(t_convert, 2),
-                "total_sec": round(t_total, 2),
-                "speed_x": round(duration / t_total, 1) if t_total > 0 else 0,
-            }
+            "stats": stats,
         })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
     finally:
-        # Чистим временные файлы
-        for f in UPLOAD_DIR.glob("upload_*"):
-            try:
-                f.unlink()
-            except OSError:
-                pass
+        # Чистим только текущие временные файлы
+        for path in (upload_path, wav_path):
+            if path:
+                try:
+                    Path(path).unlink(missing_ok=True)
+                except OSError:
+                    pass
+
+
+@app.route("/history")
+def history():
+    return jsonify(load_history())
 
 
 @app.route("/download/<filename>")
