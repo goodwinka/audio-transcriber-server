@@ -80,11 +80,9 @@ VOSK_MODELS = [
     },
     {
         "id": "ru",
-        "name": "Vosk big-ru 0.54 (~1.8 ГБ, лучшее качество)",
-        "hf": "alphacep/vosk-model-ru",
-        "dir": "vosk-model-ru-0.54",
-        "url_fallback": "https://alphacephei.com/vosk/models/vosk-model-ru-0.42.zip",
-        "dir_fallback": "vosk-model-ru-0.42",
+        "name": "Vosk big-ru 0.42 (~1.8 ГБ, лучшее качество)",
+        "url": "https://alphacephei.com/vosk/models/vosk-model-ru-0.42.zip",
+        "dir": "vosk-model-ru-0.42",
     },
     {
         "id": "small-en",
@@ -95,14 +93,7 @@ VOSK_MODELS = [
 ]
 
 def _is_valid_vosk_dir(path: Path) -> bool:
-    """Проверяет, что директория содержит настоящие файлы модели Vosk.
-    Проверяет am/ и наличие бинарных файлов > 1 МБ (защита от LFS-заглушек)."""
-    if not (path / "am").is_dir():
-        return False
-    return any(
-        f.is_file() and f.stat().st_size > 1_000_000
-        for f in (path / "am").rglob("*")
-    )
+    return (path / "am").is_dir() and (path / "conf").is_dir()
 
 def download_vosk_models():
     print("\n━━━ Vosk модели ━━━")
