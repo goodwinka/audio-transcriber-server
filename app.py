@@ -268,8 +268,10 @@ def ov_transcribe(wav_path: str, model_id: str, device: str = "GPU",
 #  GigaAM v3 ONNX  (русский ASR через onnx-asr)
 # ═══════════════════════════════════════════════════════════════
 GIGAAM_MODELS = [
-    {"id": "gigaam-v3-ctc",  "name": "GigaAM v3 CTC  (~300 МБ)",  "hf": "gigaam-v3-ctc"},
-    {"id": "gigaam-v3-rnnt", "name": "GigaAM v3 RNN-T (~300 МБ)", "hf": "gigaam-v3-rnnt"},
+    {"id": "gigaam-v3-ctc",      "name": "GigaAM v3 CTC (~885 МБ)",       "hf": "gigaam-v3-ctc"},
+    {"id": "gigaam-v3-rnnt",     "name": "GigaAM v3 RNN-T (~890 МБ)",     "hf": "gigaam-v3-rnnt"},
+    {"id": "gigaam-v3-e2e-ctc",  "name": "GigaAM v3 E2E CTC (~886 МБ)",  "hf": "gigaam-v3-e2e-ctc"},
+    {"id": "gigaam-v3-e2e-rnnt", "name": "GigaAM v3 E2E RNN-T (~892 МБ)", "hf": "gigaam-v3-e2e-rnnt"},
 ]
 GIGAAM_DIR = MODELS_DIR / "gigaam" / "gigaam-v3-onnx"
 
