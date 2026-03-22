@@ -493,12 +493,11 @@ def engines_info():
             "devices": _ov_devices,
             "models": ov_list(),
         })
-    if _gigaam_ok or any(m["available"] for m in gigaam_list()):
-        result.append({
-            "id": "gigaam", "name": "GigaAM",
-            "description": "Русский ASR, ONNX (требует onnx-asr[cpu,hub])",
-            "models": gigaam_list(),
-        })
+    result.append({
+        "id": "gigaam", "name": "GigaAM v3 ONNX",
+        "description": "Русский ASR, ONNX" + ("" if _gigaam_ok else " (требует onnx-asr[cpu,hub])"),
+        "models": gigaam_list(),
+    })
     if _whisper_hf_ok or any(m["available"] for m in whisper_hf_list()):
         result.append({
             "id": "whisper_hf", "name": "Whisper HF",
