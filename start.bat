@@ -13,8 +13,8 @@ if not exist .venv\ (
     pause & exit /b 1
 )
 
-if not exist model\ (
-    echo  Модель Vosk не найдена.
+if not exist models\vosk\ (
+    echo  Модели не найдены.
     echo  Сначала запустите install.bat
     pause & exit /b 1
 )
