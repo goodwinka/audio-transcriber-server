@@ -62,9 +62,9 @@ VOSK_KNOWN = {
         "dir":  "vosk-model-small-ru-0.22",
     },
     "ru": {
-        "name": "Русская большая v0.54 (1.8 ГБ, точнее)",
+        "name": "Русская большая v0.42 (1.8 ГБ, точнее)",
         "url":  "https://alphacephei.com/vosk/models/vosk-model-ru-0.42.zip",
-        "dirs": ["vosk-model-ru-0.54", "vosk-model-ru-0.42"],
+        "dir":  "vosk-model-ru-0.42",
     },
     "small-en": {
         "name": "English small (40 МБ)",
@@ -74,11 +74,7 @@ VOSK_KNOWN = {
 }
 
 def _vosk_model_valid(p: Path) -> bool:
-    """Принимает как классический формат (am/ + conf/),
-    так и ONNX-формат (am-onnx/ + lang/)."""
-    has_am = (p / "am").is_dir() or (p / "am-onnx").is_dir()
-    has_lang = (p / "conf").is_dir() or (p / "lang").is_dir()
-    return has_am and has_lang
+    return (p / "am").is_dir() and (p / "conf").is_dir()
 
 def _vosk_path(model_id: str) -> Path:
     info = VOSK_KNOWN.get(model_id)
