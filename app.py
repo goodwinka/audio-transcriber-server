@@ -154,9 +154,12 @@ def fw_list() -> list:
     result = []
     for m in FW_MODELS:
         local = fw_dir / m["id"]
+        # HuggingFace cache format: models--Systran--faster-whisper-{id}
+        hf_cache = fw_dir / f"models--Systran--faster-whisper-{m['id']}"
+        downloaded = local.exists() or hf_cache.exists()
         # модели скачиваются автоматически — всегда доступны
         result.append({"id": m["id"], "name": m["name"], "available": True,
-                        "downloaded": local.exists()})
+                        "downloaded": downloaded})
     return result
 
 def fw_transcribe(wav_path: str, model_id: str, language: str = "ru") -> str:

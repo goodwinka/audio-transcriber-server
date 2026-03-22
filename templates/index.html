@@ -595,7 +595,10 @@ function onEngineChange() {
 
     // Notice
     if (eng.id === 'faster_whisper') {
-        engineNotice.textContent = 'CPU int8 — оптимально для Intel. Первый запуск: модель скачается автоматически (~75..3000 МБ).';
+        const notDownloaded = eng.models.filter(m => !m.downloaded);
+        engineNotice.textContent = notDownloaded.length
+            ? 'CPU int8 — оптимально для Intel. Первый запуск: модель скачается автоматически (~75..3000 МБ).'
+            : 'CPU int8 — оптимально для Intel. Модели уже скачаны.';
         engineNotice.className = 'notice visible';
     } else if (eng.id === 'openvino') {
         const gpu = (eng.devices || []).filter(d => d.includes('GPU'));
