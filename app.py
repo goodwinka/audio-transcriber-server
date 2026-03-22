@@ -62,9 +62,9 @@ VOSK_KNOWN = {
         "dir":  "vosk-model-small-ru-0.22",
     },
     "ru": {
-        "name": "Русская большая (1.8 ГБ, точнее)",
+        "name": "Русская большая v0.54 (1.8 ГБ, точнее)",
         "url":  "https://alphacephei.com/vosk/models/vosk-model-ru-0.42.zip",
-        "dir":  "vosk-model-ru-0.42",
+        "dirs": ["vosk-model-ru-0.54", "vosk-model-ru-0.42"],
     },
     "small-en": {
         "name": "English small (40 МБ)",
@@ -80,7 +80,13 @@ def _vosk_path(model_id: str) -> Path:
         legacy = Path("model")
         if legacy.exists() and model_id == "small-ru":
             return legacy
-        return MODELS_DIR / "vosk" / info["dir"]
+        # Поддержка списка кандидатов (первый существующий)
+        dirs = info.get("dirs") or [info["dir"]]
+        for d in dirs:
+            p = MODELS_DIR / "vosk" / d
+            if p.exists():
+                return p
+        return MODELS_DIR / "vosk" / dirs[0]
     return MODELS_DIR / "vosk" / model_id
 
 def vosk_list() -> list:
@@ -90,7 +96,9 @@ def vosk_list() -> list:
     # пользовательские папки
     vosk_dir = MODELS_DIR / "vosk"
     if vosk_dir.exists():
-        known_dirs = {v["dir"] for v in VOSK_KNOWN.values()}
+        known_dirs = set()
+        for v in VOSK_KNOWN.values():
+            known_dirs.update(v.get("dirs") or [v.get("dir", "")])
         for p in vosk_dir.iterdir():
             if p.is_dir() and p.name not in known_dirs:
                 rows.append({"id": p.name, "name": p.name, "available": True})
@@ -404,6 +412,20 @@ def transcribe():
 @app.route("/history")
 def history():
     return jsonify(load_history())
+
+
+@app.route("/delete/<filename>", methods=["DELETE"])
+def delete_file(filename):
+    if re.search(r'[/\\]|\.\.', filename):
+        return jsonify({"error": "Недопустимо"}), 400
+    path = OUTPUT_DIR / filename
+    if not path.exists():
+        return jsonify({"error": "Файл не найден"}), 404
+    path.unlink()
+    h = load_history()
+    h = [e for e in h if e.get("id") != filename]
+    HISTORY_FILE.write_text(json.dumps(h, ensure_ascii=False, indent=2), encoding="utf-8")
+    return jsonify({"ok": True})
 
 
 @app.route("/download/<filename>")
