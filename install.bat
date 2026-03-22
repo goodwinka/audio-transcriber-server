@@ -88,13 +88,15 @@ if errorlevel 2 (
 echo.
 echo [7/7] Загрузка всех моделей...
 echo.
-echo  Будут скачаны (требуется место на диске ~6-8 ГБ):
+echo  Будут скачаны (требуется место на диске ~10 ГБ):
 echo    · Vosk small-ru streaming     (~45 МБ)
 echo    · Vosk big-ru 0.54            (~1.8 ГБ)
+echo    · Vosk small-en               (~40 МБ)
 echo    · Faster-Whisper tiny         (~75 МБ)
 echo    · Faster-Whisper base int8    (~145 МБ)
 echo    · Faster-Whisper small int8   (~460 МБ)
 echo    · Faster-Whisper medium int8  (~1.5 ГБ)
+echo    · Faster-Whisper large-v3     (~3 ГБ)
 echo    · GigaAM v3 ONNX              (~300 МБ)
 echo    · Whisper tiny/base/small HF  (~1.4 ГБ)
 echo    · GGML small + turbo          (~2 ГБ)

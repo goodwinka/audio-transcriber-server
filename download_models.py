@@ -86,6 +86,12 @@ VOSK_MODELS = [
         "url_fallback": "https://alphacephei.com/vosk/models/vosk-model-ru-0.42.zip",
         "dir_fallback": "vosk-model-ru-0.42",
     },
+    {
+        "id": "small-en",
+        "name": "Vosk small-en (40 МБ, English)",
+        "url": "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip",
+        "dir": "vosk-model-small-en-us-0.15",
+    },
 ]
 
 def download_vosk_models():
@@ -117,10 +123,11 @@ FW_CACHE = str(MODELS_DIR / "faster-whisper")
 Path(FW_CACHE).mkdir(exist_ok=True)
 
 FW_MODELS = [
-    {"id": "tiny",   "hf": "Systran/faster-whisper-tiny",   "name": "Tiny   (~75 МБ)"},
-    {"id": "base",   "hf": "Systran/faster-whisper-base",   "name": "Base   (~145 МБ)"},
-    {"id": "small",  "hf": "Systran/faster-whisper-small",  "name": "Small  (~460 МБ)"},
-    {"id": "medium", "hf": "Systran/faster-whisper-medium", "name": "Medium (~1.5 ГБ)"},
+    {"id": "tiny",     "hf": "Systran/faster-whisper-tiny",     "name": "Tiny     (~75 МБ)"},
+    {"id": "base",     "hf": "Systran/faster-whisper-base",     "name": "Base     (~145 МБ)"},
+    {"id": "small",    "hf": "Systran/faster-whisper-small",    "name": "Small    (~460 МБ)"},
+    {"id": "medium",   "hf": "Systran/faster-whisper-medium",   "name": "Medium   (~1.5 ГБ)"},
+    {"id": "large-v3", "hf": "Systran/faster-whisper-large-v3", "name": "Large-v3 (~3 ГБ)"},
 ]
 
 def download_fw_models():
@@ -133,7 +140,9 @@ def download_fw_models():
 
     for m in FW_MODELS:
         local = Path(FW_CACHE) / m["id"]
-        if local.exists():
+        # HuggingFace cache format: models--Systran--faster-whisper-{id}
+        hf_cache = Path(FW_CACHE) / ("models--" + m["hf"].replace("/", "--"))
+        if local.exists() or hf_cache.exists():
             print(f"  ✓ {m['name']} — уже есть")
             continue
         print(f"\n► {m['name']}")
