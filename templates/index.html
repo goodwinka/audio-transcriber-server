@@ -289,6 +289,102 @@
 
         .error.visible { display: block; }
 
+        /* ── History ── */
+        .history {
+            margin-top: 2.5rem;
+        }
+
+        .history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .history-header h2 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .history-count {
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .history-empty {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-family: var(--mono);
+            text-align: center;
+            padding: 1.5rem;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .history-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.9rem 1.1rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-rows: auto auto;
+            gap: 0.25rem 1rem;
+            transition: border-color 0.15s;
+        }
+
+        .history-item:hover {
+            border-color: var(--accent);
+        }
+
+        .history-item .h-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-item .h-preview {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            grid-column: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-item .h-meta {
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            text-align: right;
+            grid-row: 1;
+            grid-column: 2;
+            white-space: nowrap;
+        }
+
+        .history-item .h-download {
+            grid-row: 2;
+            grid-column: 2;
+            text-align: right;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .history-item .h-download:hover {
+            text-decoration: underline;
+        }
+
         /* ── Footer ── */
         footer {
             width: 100%;
@@ -374,6 +470,16 @@
             Скачать .txt
         </a>
     </div>
+    <!-- History -->
+    <div class="history" id="historySection">
+        <div class="history-header">
+            <h2>История транскрипций</h2>
+            <span class="history-count" id="historyCount"></span>
+        </div>
+        <div id="historyContent">
+            <div class="history-empty">Нет транскрипций</div>
+        </div>
+    </div>
 </main>
 
 <footer>макс. размер файла: 500 МБ</footer>
@@ -445,6 +551,56 @@
         clearFile();
     });
 
+    // History
+    async function loadHistory() {
+        try {
+            const resp = await fetch('/history');
+            const items = await resp.json();
+            renderHistory(items);
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    function formatDate(iso) {
+        const d = new Date(iso);
+        return d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderHistory(items) {
+        const container = document.getElementById('historyContent');
+        const count = document.getElementById('historyCount');
+
+        if (!items || items.length === 0) {
+            container.innerHTML = '<div class="history-empty">Нет транскрипций</div>';
+            count.textContent = '';
+            return;
+        }
+
+        count.textContent = `${items.length} файл${items.length === 1 ? '' : items.length < 5 ? 'а' : 'ов'}`;
+
+        const list = document.createElement('div');
+        list.className = 'history-list';
+
+        items.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'history-item';
+            const dur = item.stats ? `${item.stats.duration_sec}с` : '';
+            el.innerHTML = `
+                <span class="h-name">${item.original_name || item.id}</span>
+                <span class="h-meta">${formatDate(item.created_at)}${dur ? ' · ' + dur : ''}</span>
+                <span class="h-preview">${item.preview || ''}</span>
+                <a class="h-download" href="${item.download}" download>скачать .txt</a>
+            `;
+            list.appendChild(el);
+        });
+
+        container.innerHTML = '';
+        container.appendChild(list);
+    }
+
+    loadHistory();
+
     // Transcribe
     transcribeBtn.addEventListener('click', async () => {
         if (!selectedFile) return;
@@ -478,6 +634,7 @@
             `;
 
             result.classList.add('visible');
+            loadHistory();
 
         } catch (err) {
             errorDiv.textContent = err.message;
