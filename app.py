@@ -73,18 +73,28 @@ VOSK_KNOWN = {
     },
 }
 
+def _vosk_model_valid(p: Path) -> bool:
+    """Проверяет, что директория содержит настоящие файлы модели Vosk.
+    Наличие am/ с бинарниками > 1 МБ исключает LFS pointer-заглушки."""
+    if not (p / "am").is_dir():
+        return False
+    return any(
+        f.is_file() and f.stat().st_size > 1_000_000
+        for f in (p / "am").rglob("*")
+    )
+
 def _vosk_path(model_id: str) -> Path:
     info = VOSK_KNOWN.get(model_id)
     if info:
         # обратная совместимость: старая папка model/ считается small-ru
         legacy = Path("model")
-        if legacy.exists() and model_id == "small-ru":
+        if legacy.exists() and model_id == "small-ru" and _vosk_model_valid(legacy):
             return legacy
-        # Поддержка списка кандидатов (первый существующий)
+        # Поддержка списка кандидатов (первый валидный)
         dirs = info.get("dirs") or [info["dir"]]
         for d in dirs:
             p = MODELS_DIR / "vosk" / d
-            if p.exists():
+            if _vosk_model_valid(p):
                 return p
         return MODELS_DIR / "vosk" / dirs[0]
     return MODELS_DIR / "vosk" / model_id
@@ -92,7 +102,7 @@ def _vosk_path(model_id: str) -> Path:
 def vosk_list() -> list:
     rows = []
     for mid, info in VOSK_KNOWN.items():
-        rows.append({"id": mid, "name": info["name"], "available": _vosk_path(mid).exists()})
+        rows.append({"id": mid, "name": info["name"], "available": _vosk_model_valid(_vosk_path(mid))})
     # пользовательские папки
     vosk_dir = MODELS_DIR / "vosk"
     if vosk_dir.exists():
@@ -100,7 +110,7 @@ def vosk_list() -> list:
         for v in VOSK_KNOWN.values():
             known_dirs.update(v.get("dirs") or [v.get("dir", "")])
         for p in vosk_dir.iterdir():
-            if p.is_dir() and p.name not in known_dirs:
+            if p.is_dir() and p.name not in known_dirs and _vosk_model_valid(p):
                 rows.append({"id": p.name, "name": p.name, "available": True})
     return rows
 
