@@ -281,6 +281,34 @@ def gigaam_list() -> list:
         result.append({"id": m["id"], "name": m["name"], "available": GIGAAM_DIR.exists()})
     return result
 
+_GIGAAM_CHUNK_SEC = 40  # модель ограничена ~50 сек (5000 фреймов × 10 мс)
+
+
+def _wav_chunks(wav_path: str, chunk_sec: int):
+    """Разбивает WAV на временные файлы по chunk_sec секунд, возвращает пути."""
+    import tempfile
+    chunks = []
+    with wave.open(wav_path, "rb") as wf:
+        rate      = wf.getframerate()
+        n_frames  = wf.getnframes()
+        ch        = wf.getnchannels()
+        sw        = wf.getsampwidth()
+        chunk_len = rate * chunk_sec
+        offset    = 0
+        while offset < n_frames:
+            wf.setpos(offset)
+            data = wf.readframes(chunk_len)
+            tmp  = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+            with wave.open(tmp.name, "wb") as out:
+                out.setnchannels(ch)
+                out.setsampwidth(sw)
+                out.setframerate(rate)
+                out.writeframes(data)
+            chunks.append(tmp.name)
+            offset += chunk_len
+    return chunks
+
+
 def gigaam_transcribe(wav_path: str, model_id: str) -> str:
     if not _gigaam_ok:
         raise RuntimeError("Для GigaAM нужно установить:\n  pip install onnx-asr[cpu,hub]")
@@ -293,8 +321,21 @@ def gigaam_transcribe(wav_path: str, model_id: str) -> str:
         else:
             _cache[key] = _onnx_asr.load_model(hf_id)
         print(f"[✓] GigaAM {model_id} загружена")
-    text = _cache[key].recognize(wav_path)
-    return format_text([text] if text and text.strip() else [])
+    model = _cache[key]
+    chunks = _wav_chunks(wav_path, _GIGAAM_CHUNK_SEC)
+    try:
+        parts = []
+        for c in chunks:
+            t = model.recognize(c)
+            if t and t.strip():
+                parts.append(t.strip())
+    finally:
+        for c in chunks:
+            try:
+                os.unlink(c)
+            except OSError:
+                pass
+    return format_text(parts)
 
 
 # ═══════════════════════════════════════════════════════════════
