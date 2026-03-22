@@ -74,8 +74,11 @@ VOSK_KNOWN = {
 }
 
 def _vosk_model_valid(p: Path) -> bool:
-    """Проверяет стандартную структуру модели Vosk: am/ + conf/."""
-    return (p / "am").is_dir() and (p / "conf").is_dir()
+    """Принимает как классический формат (am/ + conf/),
+    так и ONNX-формат (am-onnx/ + lang/)."""
+    has_am = (p / "am").is_dir() or (p / "am-onnx").is_dir()
+    has_lang = (p / "conf").is_dir() or (p / "lang").is_dir()
+    return has_am and has_lang
 
 def _vosk_path(model_id: str) -> Path:
     info = VOSK_KNOWN.get(model_id)

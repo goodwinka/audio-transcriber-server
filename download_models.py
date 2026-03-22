@@ -95,10 +95,10 @@ VOSK_MODELS = [
 ]
 
 def _is_valid_vosk_dir(path: Path) -> bool:
-    """Проверяет стандартную структуру модели Vosk: am/ + conf/.
-    HF-репо alphacep/vosk-model-ru содержит am/ но не conf/ (ONNX-формат),
-    поэтому такие скачивания считаются невалидными."""
-    return (path / "am").is_dir() and (path / "conf").is_dir()
+    """Принимает классический формат (am/ + conf/) и ONNX (am-onnx/ + lang/)."""
+    has_am = (path / "am").is_dir() or (path / "am-onnx").is_dir()
+    has_lang = (path / "conf").is_dir() or (path / "lang").is_dir()
+    return has_am and has_lang
 
 def download_vosk_models():
     print("\n━━━ Vosk модели ━━━")
