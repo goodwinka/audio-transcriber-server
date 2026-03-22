@@ -95,14 +95,10 @@ VOSK_MODELS = [
 ]
 
 def _is_valid_vosk_dir(path: Path) -> bool:
-    """Проверяет, что директория содержит настоящие файлы модели Vosk.
-    Проверяет am/ и наличие бинарных файлов > 1 МБ (защита от LFS-заглушек)."""
-    if not (path / "am").is_dir():
-        return False
-    return any(
-        f.is_file() and f.stat().st_size > 1_000_000
-        for f in (path / "am").rglob("*")
-    )
+    """Проверяет стандартную структуру модели Vosk: am/ + conf/.
+    HF-репо alphacep/vosk-model-ru содержит am/ но не conf/ (ONNX-формат),
+    поэтому такие скачивания считаются невалидными."""
+    return (path / "am").is_dir() and (path / "conf").is_dir()
 
 def download_vosk_models():
     print("\n━━━ Vosk модели ━━━")
