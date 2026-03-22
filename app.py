@@ -641,7 +641,7 @@ def download(filename):
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 47821))
     if _gigaam_ok:
         def _preload_default_gigaam():
             model_id = "gigaam-v3-e2e-ctc"
